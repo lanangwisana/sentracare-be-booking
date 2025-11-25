@@ -1,5 +1,6 @@
 # bagian main ini digunakan sebagai entry point FastAPI 
 from fastapi import FastAPI, Depends
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from database import SessionLocal, engine, Base
 from models import Booking
@@ -8,7 +9,13 @@ from typing import Optional
 from datetime import date, time
 
 app = FastAPI()
-Base.metadata.create_all(bind=engine)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 def get_db():
     db = SessionLocal()
