@@ -17,6 +17,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+Base.metadata.create_all(bind=engine)
+
 def get_db():
     db = SessionLocal()
     try:
@@ -27,15 +29,15 @@ def get_db():
 class BookingRequest(BaseModel):
     nama_lengkap: str
     tanggal_lahir: date
-    jenis_kelamin: str
+    jenis_kelamin: JenisKelaminEnum
     nomor_telepon: str
     email: EmailStr
     alamat: str
-    jenis_layanan: str
-    tipe_layanan: Optional[str]
+    jenis_layanan: JenisLayananEnum
+    tipe_layanan: TipeLayananEnum
     tanggal_pemeriksaan: date
     jam_pemeriksaan: time
-    catatan: Optional[str]
+    catatan: Optional[str] = None
 
 @app.post("/booking")
 def create_booking(data: BookingRequest, db: Session = Depends(get_db)):

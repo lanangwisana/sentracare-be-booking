@@ -9,14 +9,14 @@ class JenisKelaminEnum(str, Enum):
     PEREMPUAN = "Perempuan"
 
 class JenisLayananEnum(str, Enum):
-    MEDICAL_CHECKUP = "Medical Check Up"
+    MEDICAL_CHECKUP = "Medical Check-Up"
     VAKSINASI = "Vaksinasi"
     LAB_TES = "Lab Tes"
 
 class TipeLayananEnum(str, Enum):
-    FULL_BODY = "Medical Check Up Full Body"
+    FULL_BODY = "Madical Check-Up Full Body"
     HPV = "Vaksinasi HPV"
-    ANAK_BAYI = "Vaksinasi Anak dan Bayi"
+    ANAK_BAYI = "Vaksinasi Anak & Bayi"
     TES_DARAH = "Tes Darah"
     TES_HORMON = "Tes Hormon"
     TES_URINE = "Tes Urine"
@@ -39,10 +39,12 @@ class BookingRequest(BaseModel):
 class BookingResponse(BaseModel):
     id: int
     nama_lengkap: str
-    jenis_layanan: str
-    tipe_layanan: str
+    jenis_kelamin: JenisKelaminEnum
+    jenis_layanan: JenisLayananEnum
+    tipe_layanan: TipeLayananEnum
     tanggal_pemeriksaan: date
     jam_pemeriksaan: time
+    catatan: Optional[str] = None
 
     class Config:
         orm_mode = True

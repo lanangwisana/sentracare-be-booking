@@ -8,17 +8,18 @@ class JenisKelaminEnum(str, Enum):
     PEREMPUAN = "Perempuan"
 
 class JenisLayananEnum(str, Enum):
-    MEDICAL_CHECKUP = "Medical Check Up"
+    MEDICAL_CHECKUP = "Medical Check-Up"
     VAKSINASI = "Vaksinasi"
     LAB_TES = "Lab Tes"
 
 class TipeLayananEnum(str, Enum):
-    FULL_BODY = "Medical Check Up Full Body"
+    FULL_BODY = "Madical Check-Up Full Body"
     HPV = "Vaksinasi HPV"
-    ANAK_BAYI = "Vaksinasi Anak dan Bayi"
+    ANAK_BAYI = "Vaksinasi Anak & Bayi"
     TES_DARAH = "Tes Darah"
     TES_HORMON = "Tes Hormon"
     TES_URINE = "Tes Urine"
+
 
 class Booking(Base):
     __tablename__ = "bookings"
@@ -34,4 +35,4 @@ class Booking(Base):
     tipe_layanan = Column(SqlEnum(TipeLayananEnum))
     tanggal_pemeriksaan = Column(Date)
     jam_pemeriksaan = Column(Time)
-    catatan = Column(Text)
+    catatan = Column(Text) | None

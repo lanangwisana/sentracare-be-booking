@@ -1,3 +1,3 @@
 {
-  "cSpell.words": ["Anak", "ANAK", "Bayi", "BAYI", "Darah", "DARAH", "dugunakan", "fastapi", "Hormon", "HORMON", "kenektivitas", "pilihan", "pymysql", "sentracare", "sessionmaker", "sqlalchemy", "uvicorn"]
+  "cSpell.words": ["Anak", "ANAK", "Bayi", "BAYI", "Darah", "DARAH", "dotenv", "dugunakan", "fastapi", "Hormon", "HORMON", "kenektivitas", "pilihan", "pydantic", "pymysql", "sentracare", "sessionmaker", "sqlalchemy", "uvicorn"]
 }
