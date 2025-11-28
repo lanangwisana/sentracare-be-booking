@@ -7,6 +7,15 @@ from models import Booking
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 from datetime import date, time
+from schemas import BookingRequest, BookingResponse
+from models import JenisKelaminEnum, JenisLayananEnum, TipeLayananEnum
+
+class BookingSuccessResponse(BaseModel):
+    message: str
+    booking: BookingResponse
+
+    class Config:
+        orm_mode = True
 
 app = FastAPI()
 app.add_middleware(
@@ -26,23 +35,11 @@ def get_db():
     finally:
         db.close()
 
-class BookingRequest(BaseModel):
-    nama_lengkap: str
-    tanggal_lahir: date
-    jenis_kelamin: JenisKelaminEnum
-    nomor_telepon: str
-    email: EmailStr
-    alamat: str
-    jenis_layanan: JenisLayananEnum
-    tipe_layanan: TipeLayananEnum
-    tanggal_pemeriksaan: date
-    jam_pemeriksaan: time
-    catatan: Optional[str] = None
-
-@app.post("/booking")
+@app.post("/booking", response_model=BookingSuccessResponse)
 def create_booking(data: BookingRequest, db: Session = Depends(get_db)):
-    booking = Booking(**data.dict())
+    booking = Booking(**data.model_dump())
     db.add(booking)
     db.commit()
     db.refresh(booking)
-    return {"message": "Booking berhasil", "id": booking.id}
+    return {"message": "Booking berhasil", "booking": booking}
+
