@@ -20,7 +20,6 @@ class TipeLayananEnum(str, Enum):
     TES_HORMON = "Tes Hormon"
     TES_URINE = "Tes Urine"
 
-
 class Booking(Base):
     __tablename__ = "bookings"
 
@@ -35,4 +34,4 @@ class Booking(Base):
     tipe_layanan = Column(SqlEnum(TipeLayananEnum))
     tanggal_pemeriksaan = Column(Date)
     jam_pemeriksaan = Column(Time)
-    catatan = Column(Text) | None
+    catatan = Column(Text, nullable= True)
