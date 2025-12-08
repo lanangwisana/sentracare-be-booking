@@ -14,7 +14,7 @@ class JenisLayananEnum(str, Enum):
     LAB_TES = "Lab Tes"
 
 class TipeLayananEnum(str, Enum):
-    FULL_BODY = "Madical Check-Up Full Body"
+    FULL_BODY = "Medical Check-Up Full Body"
     HPV = "Vaksinasi HPV"
     ANAK_BAYI = "Vaksinasi Anak & Bayi"
     TES_DARAH = "Tes Darah"
