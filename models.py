@@ -1,6 +1,7 @@
 # Bagian models.py ini dugunakan untuk membuat struktur tabel booking di database
 from enum import Enum
-from sqlalchemy import Column, Integer, String, Date, Time, Text, Enum as SqlEnum
+from sqlalchemy import Column, Integer, String, Date, Time, Text, DateTime, Enum as SqlEnum
+from sqlalchemy.sql import func
 from database import Base
 
 class JenisKelaminEnum(str, Enum):
@@ -13,12 +14,17 @@ class JenisLayananEnum(str, Enum):
     LAB_TES = "Lab Tes"
 
 class TipeLayananEnum(str, Enum):
-    FULL_BODY = "Madical Check-Up Full Body"
+    FULL_BODY = "Medical Check-Up Full Body"
     HPV = "Vaksinasi HPV"
     ANAK_BAYI = "Vaksinasi Anak & Bayi"
     TES_DARAH = "Tes Darah"
     TES_HORMON = "Tes Hormon"
     TES_URINE = "Tes Urine"
+    
+class StatusEnum(str, Enum):
+    PENDING = "Pending"
+    CONFIRMED = "Confirmed"
+    CANCELLED = "Cancelled"
 
 class Booking(Base):
     __tablename__ = "bookings"
@@ -35,3 +41,6 @@ class Booking(Base):
     tanggal_pemeriksaan = Column(Date)
     jam_pemeriksaan = Column(Time)
     catatan = Column(Text, nullable= True)
+    status = Column(SqlEnum(StatusEnum), default=StatusEnum.PENDING)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
