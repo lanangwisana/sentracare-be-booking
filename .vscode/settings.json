@@ -1,3 +1,28 @@
 {
-  "cSpell.words": ["Anak", "ANAK", "autoflush", "Bayi", "BAYI", "Darah", "DARAH", "dotenv", "dugunakan", "fastapi", "Hormon", "HORMON", "kenektivitas", "pilihan", "pydantic", "pymysql", "sentracare", "sessionmaker", "sqlalchemy", "uvicorn"]
+  "cSpell.words": [
+    "Anak",
+    "ANAK",
+    "autoflush",
+    "baru",
+    "Bayi",
+    "BAYI",
+    "Darah",
+    "DARAH",
+    "dotenv",
+    "dugunakan",
+    "fastapi",
+    "Hormon",
+    "HORMON",
+    "kenektivitas",
+    "memperbarui",
+    "mendapatkan",
+    "pilihan",
+    "pydantic",
+    "pymysql",
+    "sentracare",
+    "sessionmaker",
+    "sqlalchemy",
+    "uvicorn"
+  ],
+  "python.languageServer": "Pylance"
 }
