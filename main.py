@@ -9,6 +9,8 @@ from typing import Optional
 from datetime import date, time
 from schemas import BookingRequest, BookingResponse
 from models import JenisKelaminEnum, JenisLayananEnum, TipeLayananEnum
+import strawberry
+from strawberry.fastapi import GraphQLRouter
 
 class BookingSuccessResponse(BaseModel):
     message: str
@@ -16,8 +18,28 @@ class BookingSuccessResponse(BaseModel):
 
     class Config:
         orm_mode = True
+@strawberry.type
+class BookingType:
+    id: int
+    nama_lengkap: str
+    jenis_layanan: str
+    tanggal_pemeriksaan: str
+    jam_pemeriksaan: str
+    status: str
+@strawberry.type
+class Query:
+    @strawberry.field
+    def bookings(self, info) -> list[BookingType]:
+        db = SessionLocal()
+        try:
+            return db.query(Booking).all()
+        finally:
+            db.close()
+schema = strawberry.Schema(query=Query)
+graphql_app = GraphQLRouter(schema)
 
 app = FastAPI()
+app.include_router(graphql_app, prefix="/graphql")
 
 # Konfigurasi CORS (Cross-Origin Resource Sharing)
 app.add_middleware(
