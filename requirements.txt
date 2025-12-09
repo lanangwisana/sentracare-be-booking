@@ -5,4 +5,5 @@ pymysql
 python-dotenv
 pydantic[email]
 cryptography
+strawberry-graphql
 
