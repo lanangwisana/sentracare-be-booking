@@ -6,4 +6,4 @@ python-dotenv
 pydantic[email]
 cryptography
 strawberry-graphql
-
+python-jose
