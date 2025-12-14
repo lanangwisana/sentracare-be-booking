@@ -26,12 +26,14 @@ class BookingType:
 @strawberry.type
 class Query:
     @strawberry.field
-    def bookings(self) -> List[BookingType]:
+    def bookings(self, info, status: str | None = None) -> List[BookingType]:
         db = SessionLocal()
-        try:
-            records = db.query(Booking).all()
-            return [BookingType.from_model(b) for b in records]
-        finally:
-            db.close()
+        # ambil user dari request context
+        user = info.context["request"].state.user
+        query = db.query(Booking).filter(Booking.email == user.email)  # filter sesuai user
+        if status:
+            query = query.filter(Booking.status == status)
+        return query.all()
+
 
 schema = strawberry.Schema(query=Query)
