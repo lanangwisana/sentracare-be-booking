@@ -27,7 +27,6 @@ class BookingRequest(BaseModel):
     tanggal_lahir: date
     jenis_kelamin: JenisKelaminEnum
     nomor_telepon: str
-    email: EmailStr
     alamat: str
     jenis_layanan: JenisLayananEnum
     tipe_layanan: TipeLayananEnum
