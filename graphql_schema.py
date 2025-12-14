@@ -28,12 +28,33 @@ class Query:
     @strawberry.field
     def bookings(self, info, status: str | None = None) -> List[BookingType]:
         db = SessionLocal()
-        # ambil user dari request context
-        user = info.context["request"].state.user
-        query = db.query(Booking).filter(Booking.email == user.email)  # filter sesuai user
+        user = getattr(info.context["request"].state, "user", None)
+        query = db.query(Booking)
+
+        if not user:
+            return []
+
+        if user["role"] != "SuperAdmin":
+            query = query.filter(Booking.email == user["email"])
+
         if status:
             query = query.filter(Booking.status == status)
-        return query.all()
 
+        return [BookingType.from_model(b) for b in query.all()]
 
-schema = strawberry.Schema(query=Query)
+@strawberry.type
+class Mutation:
+    @strawberry.mutation
+    def updateBookingStatus(self, id: int, status: str, info) -> BookingType:
+        user = getattr(info.context["request"].state, "user", None)
+        if not user or user["role"] != "SuperAdmin":
+            raise Exception("Unauthorized")
+        db = SessionLocal()
+        booking = db.query(Booking).get(id)
+        if not booking:
+            raise Exception("Not found")
+        booking.status = status
+        db.commit()
+        db.refresh(booking)
+        return BookingType.from_model(booking)
+
