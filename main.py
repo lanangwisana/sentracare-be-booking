@@ -13,6 +13,7 @@ import strawberry
 from strawberry.fastapi import GraphQLRouter
 from jose import jwt, JWTError
 import os
+from graphql_schema import schema
 
 SECRET_KEY = os.getenv("AUTH_SECRET_KEY", "change-this-secret-in-prod")
 ALGORITHM = "HS256"
@@ -22,50 +23,12 @@ ISSUER = os.getenv("AUTH_ISSUER", "sentracare-auth")
 class BookingSuccessResponse(BaseModel):
     message: str
     booking: BookingResponse
-
     class Config:
         orm_mode = True
-@strawberry.type
-class BookingType:
-    id: int
-    nama_lengkap: str
-    jenis_layanan: str
-    tanggal_pemeriksaan: str
-    jam_pemeriksaan: str
-    status: str
-    @staticmethod
-    def from_model(model: Booking) -> "BookingType":
-        return BookingType(
-            id=model.id,
-            nama_lengkap=model.nama_lengkap,
-            # Perlu handle Enum jika jenis_layanan atau status adalah Enum
-            jenis_layanan=model.jenis_layanan.value if hasattr(model.jenis_layanan, "value") else model.jenis_layanan,
-            tanggal_pemeriksaan=str(model.tanggal_pemeriksaan),
-            jam_pemeriksaan=str(model.jam_pemeriksaan),
-            status=model.status.value if hasattr(model.status, "value") else model.status,
-        )
-@strawberry.type
-class Query:
-    @strawberry.field
-    def bookings(self, info) -> list[BookingType]:
-        db = SessionLocal()
-        try:
-            user = getattr(info.context["request"].state, "user", None)
-            if not user:
-                return [] 
-            query = db.query(Booking)
-            if user["role"] != "SuperAdmin":
-                user_email = user.get("email")
-                if user_email:
-                    query = query.filter(Booking.email == user_email)
-                else:
-                    return []
-            query = query.order_by(Booking.created_at.desc())
 
-            return [BookingType.from_model(b) for b in query.all()]
-        finally:
-            db.close()
-schema = strawberry.Schema(query=Query)
+class UpdateStatusRequest(BaseModel):
+    status: str
+
 graphql_app = GraphQLRouter(schema)
 
 app = FastAPI()
@@ -99,8 +62,20 @@ app.add_middleware(
         "http://0.0.0.0:3000",
         "http://host.docker.internal:3000"],
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"], 
+    allow_headers=[
+        "Authorization", 
+        "Content-Type",
+        "Accept",
+        "Origin",
+        "X-Requested-With",
+        "Access-Control-Allow-Origin",
+        "Access-Control-Allow-Headers",
+        "Access-Control-Request-Method",
+        "Access-Control-Request-Headers"
+    ],
+    expose_headers=["*"],
+    max_age=600,
 )
 
 Base.metadata.create_all(bind=engine)
@@ -146,11 +121,28 @@ def list_bookings(request: Request, db: Session = Depends(get_db)):
 
 # Endpoint untuk memperbarui status booking
 @app.put("/booking/{booking_id}/status", response_model=BookingResponse)
-def update_booking_status(booking_id: int, status: StatusEnum, db: Session = Depends(get_db)):
+async def update_booking_status(
+    booking_id: int, 
+    request_data: UpdateStatusRequest,
+    db: Session = Depends(get_db)
+):
     booking = db.query(Booking).filter(Booking.id == booking_id).first()
     if not booking:
         raise HTTPException(status_code=404, detail="Booking tidak ditemukan")
-    booking.status = status
+    # Konversi string ke StatusEnum
+    status_input = request_data.status.upper()
+    try:
+        if status_input == "CONFIRMED":
+            booking.status = StatusEnum.CONFIRMED
+        elif status_input == "CANCELLED":
+            booking.status = StatusEnum.CANCELLED
+        elif status_input == "PENDING":
+            booking.status = StatusEnum.PENDING
+        else:
+            raise HTTPException(status_code=400, detail=f"Status tidak valid: {request_data.status}")
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Error: {str(e)}")
+    
     db.commit()
     db.refresh(booking)
     return booking
