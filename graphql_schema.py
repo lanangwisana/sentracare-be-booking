@@ -1,6 +1,6 @@
 import strawberry
 from typing import List
-from models import Booking
+from models import Booking, StatusEnum
 from database import SessionLocal
 
 @strawberry.type
@@ -30,31 +30,54 @@ class Query:
         db = SessionLocal()
         user = getattr(info.context["request"].state, "user", None)
         query = db.query(Booking)
-
         if not user:
             return []
-
         if user["role"] != "SuperAdmin":
             query = query.filter(Booking.email == user["email"])
-
         if status:
             query = query.filter(Booking.status == status)
-
         return [BookingType.from_model(b) for b in query.all()]
 
 @strawberry.type
 class Mutation:
     @strawberry.mutation
-    def updateBookingStatus(self, id: int, status: str, info) -> BookingType:
-        user = getattr(info.context["request"].state, "user", None)
-        if not user or user["role"] != "SuperAdmin":
-            raise Exception("Unauthorized")
+    def updateBookingStatus(self, info, id: int, status: str) -> BookingType:
         db = SessionLocal()
-        booking = db.query(Booking).get(id)
-        if not booking:
-            raise Exception("Not found")
-        booking.status = status
-        db.commit()
-        db.refresh(booking)
-        return BookingType.from_model(booking)
+        try:
+            user = getattr(info.context["request"].state, "user", None)
+            # Cek autentikasi dan authorization
+            if not user:
+                raise Exception("Unauthorized: User not authenticated")
+            if user["role"] != "SuperAdmin":
+                raise Exception("Unauthorized: Only SuperAdmin can update booking status")
+            # Cari booking
+            booking = db.query(Booking).filter(Booking.id == id).first()
+            if not booking:
+                raise Exception(f"Booking with id {id} not found")
+            try:
+                # Konversi ke uppercase untuk mencocokkan enum
+                status_upper = status.upper()
+                if status_upper == "CONFIRMED":
+                    status_enum = StatusEnum.CONFIRMED
+                elif status_upper == "CANCELLED":
+                    status_enum = StatusEnum.CANCELLED
+                elif status_upper == "PENDING":
+                    status_enum = StatusEnum.PENDING
+                else:
+                    raise Exception(f"Invalid status: {status}")
+            except ValueError:
+                raise Exception(f"Invalid status value: {status}")
+            # Update status
+            booking.status = status_enum
+            db.commit()
+            db.refresh(booking)
+            
+            return BookingType.from_model(booking)
+        except Exception as e:
+            db.rollback()
+            raise e  # Re-raise exception agar GraphQL bisa menangkapnya
+        finally:
+            db.close()
 
+# Export schema
+schema = strawberry.Schema(query=Query, mutation=Mutation)
