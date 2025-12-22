@@ -2,7 +2,7 @@ fastapi
 uvicorn
 sqlalchemy
 pymysql
-python-dotenv
+python-dotenv                                                                             
 pydantic[email]
 cryptography
 strawberry-graphql
