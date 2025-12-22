@@ -1,30 +1,30 @@
-# Bagian models.py ini dugunakan untuk membuat struktur tabel booking di database
+# sentracare-be-booking/models.py
 from enum import Enum
 from sqlalchemy import Column, Integer, String, Date, Time, Text, DateTime, Enum as SqlEnum
 from sqlalchemy.sql import func
 from database import Base
 
 class JenisKelaminEnum(str, Enum):
-    LAKI_LAKI = "Laki-laki"
-    PEREMPUAN = "Perempuan"
+    LAKI_LAKI = "LAKI_LAKI"
+    PEREMPUAN = "PEREMPUAN"
 
 class JenisLayananEnum(str, Enum):
-    MEDICAL_CHECKUP = "Medical Check-Up"
-    VAKSINASI = "Vaksinasi"
-    LAB_TES = "Lab Tes"
+    MEDICAL_CHECKUP = "MEDICAL_CHECKUP" # Harus UPPERCASE sesuai pesan error
+    VAKSINASI = "VAKSINASI"
+    LAB_TES = "LAB_TES"
 
 class TipeLayananEnum(str, Enum):
-    FULL_BODY = "Medical Check-Up Full Body"
-    HPV = "Vaksinasi HPV"
-    ANAK_BAYI = "Vaksinasi Anak & Bayi"
-    TES_DARAH = "Tes Darah"
-    TES_HORMON = "Tes Hormon"
-    TES_URINE = "Tes Urine"
+    FULL_BODY = "FULL_BODY"
+    HPV = "HPV"
+    ANAK_BAYI = "ANAK_BAYI"
+    TES_DARAH = "TES_DARAH"
+    TES_HORMON = "TES_HORMON"
+    TES_URINE = "TES_URINE"
     
 class StatusEnum(str, Enum):
-    PENDING = "Pending"
-    CONFIRMED = "Confirmed"
-    CANCELLED = "Cancelled"
+    PENDING = "PENDING"
+    CONFIRMED = "CONFIRMED"
+    CANCELLED = "CANCELLED"
 
 class Booking(Base):
     __tablename__ = "bookings"
@@ -40,7 +40,8 @@ class Booking(Base):
     tipe_layanan = Column(SqlEnum(TipeLayananEnum))
     tanggal_pemeriksaan = Column(Date)
     jam_pemeriksaan = Column(Time)
-    catatan = Column(Text, nullable= True)
+    catatan = Column(Text, nullable=True)
     status = Column(SqlEnum(StatusEnum), default=StatusEnum.PENDING)
+    doctor_name = Column(String(100), nullable=True) 
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
