@@ -1,27 +1,9 @@
-from pydantic import BaseModel, EmailStr
+# sentracare-be-booking/schemas.py
+from pydantic import BaseModel
 from datetime import date, time
 from typing import Optional
-from enum import Enum
+from models import JenisKelaminEnum, JenisLayananEnum, TipeLayananEnum
 
-# Enum untuk validasi pilihan dropdown
-class JenisKelaminEnum(str, Enum):
-    LAKI_LAKI = "Laki-laki"
-    PEREMPUAN = "Perempuan"
-
-class JenisLayananEnum(str, Enum):
-    MEDICAL_CHECKUP = "Medical Check-Up"
-    VAKSINASI = "Vaksinasi"
-    LAB_TES = "Lab Tes"
-
-class TipeLayananEnum(str, Enum):
-    FULL_BODY = "Medical Check-Up Full Body"
-    HPV = "Vaksinasi HPV"
-    ANAK_BAYI = "Vaksinasi Anak & Bayi"
-    TES_DARAH = "Tes Darah"
-    TES_HORMON = "Tes Hormon"
-    TES_URINE = "Tes Urine"
-
-# Schema untuk request body
 class BookingRequest(BaseModel):
     nama_lengkap: str
     tanggal_lahir: date
@@ -29,21 +11,11 @@ class BookingRequest(BaseModel):
     nomor_telepon: str
     alamat: str
     jenis_layanan: JenisLayananEnum
-    tipe_layanan: TipeLayananEnum
+    tipe_layanan: Optional[TipeLayananEnum] = None
     tanggal_pemeriksaan: date
     jam_pemeriksaan: time
     catatan: Optional[str] = None
 
-# Schema untuk response
-class BookingResponse(BaseModel):
-    id: int
-    nama_lengkap: str
-    jenis_kelamin: JenisKelaminEnum
-    jenis_layanan: JenisLayananEnum
-    tipe_layanan: TipeLayananEnum
-    tanggal_pemeriksaan: date
-    jam_pemeriksaan: time
-    catatan: Optional[str] = None
-
-    class Config:
-        orm_mode = True
+class UpdateStatusRequest(BaseModel):
+    status: str
+    doctor_name: Optional[str] = None
