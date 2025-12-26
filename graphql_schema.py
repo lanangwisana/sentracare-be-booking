@@ -38,14 +38,23 @@ class Query:
         try:
             request = info.context["request"]
             user = getattr(request.state, "user", None)
-            if not user: return []
             
+            if not user: 
+                print("DEBUG: No user found in request state")
+                return []
+            
+            # Ambil role dan pastikan tidak None sebelum di .upper()
+            user_role = str(user.get("role", "")).upper()
+            user_email = user.get("email")
+
             query = db.query(Booking)
-            # Samakan role dengan yang ada di DB (Uppercase)
-            if user.get("role").upper() != "SUPERADMIN":
-                query = query.filter(Booking.email == user.get("email"))
+            
+            # Logika: Jika BUKAN SuperAdmin, baru di-filter emailnya
+            if user_role != "SUPERADMIN":
+                query = query.filter(Booking.email == user_email)
             
             records = query.order_by(Booking.id.desc()).all()
+            print(f"DEBUG: Found {len(records)} bookings for role {user_role}")
             return [BookingType.from_model(b) for b in records]
         finally:
             db.close()
