@@ -19,3 +19,4 @@ class BookingRequest(BaseModel):
 class UpdateStatusRequest(BaseModel):
     status: str
     doctor_name: Optional[str] = None
+    doctor_email: Optional[str] = None 
