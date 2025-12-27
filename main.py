@@ -20,7 +20,10 @@ ALGORITHM = os.getenv("AUTH_ALGORITHM", "HS256")
 ISSUER = os.getenv("AUTH_ISSUER", "sentracare-auth")
 AUDIENCE = os.getenv("AUTH_AUDIENCE", "sentracare-services")
 
-app = FastAPI()
+app = FastAPI(
+    title= "Sentracare Booking Service",
+    description= "",
+)
 
 app.add_middleware(
     CORSMiddleware,
@@ -66,7 +69,12 @@ def gender_full_from_booking(booking: Booking) -> str:
     return "Laki-laki"
 
 # === ENDPOINT UNTUK PASIEN MEMBUAT BOOKING ===
-@app.post("/booking")
+@app.post(
+    "/booking",
+    tags="",
+    summary="",
+    description=""
+    )
 async def create_booking(data: BookingRequest, request: Request, db: Session = Depends(get_db)):
     user = getattr(request.state, "user", None)
     if not user:
