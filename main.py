@@ -13,6 +13,7 @@ from typing import List, Optional
 from schemas import BookingRequest, UpdateStatusRequest
 from datetime import date
 import httpx
+# from rabbitmq import publish_booking_confirmed
 
 # SECRET_KEY harus sama dengan Auth Service
 SECRET_KEY = os.getenv("AUTH_SECRET_KEY", "changeme")
@@ -21,8 +22,9 @@ ISSUER = os.getenv("AUTH_ISSUER", "sentracare-auth")
 AUDIENCE = os.getenv("AUTH_AUDIENCE", "sentracare-services")
 
 app = FastAPI(
-    title= "Sentracare Booking Service",
-    description= "",
+    title="Sentracare Booking Service", 
+    description="API untuk booking layanan di SentraCare", 
+    version="1.0.0",
 )
 
 app.add_middleware(
@@ -113,10 +115,7 @@ async def update_booking_status(booking_id: int, data: UpdateStatusRequest, requ
     try:
         if status_input == "CONFIRMED":
             booking.status = StatusEnum.CONFIRMED
-            # PERBAIKAN: Gunakan data.doctor_name (BUKAN data.get)
             booking.doctor_name = data.doctor_name
-            
-            # --- LOGIKA OTOMATISASI PARALEL (Push ke Patient Service) ---
             age = calculate_age(booking.tanggal_lahir)
             gender_full = gender_full_from_booking(booking)
 
@@ -134,7 +133,8 @@ async def update_booking_status(booking_id: int, data: UpdateStatusRequest, requ
                 "doctor_email": data.doctor_email,
                 "booking_id": booking.id
             }
-            
+            # await publish_booking_confirmed(patient_payload)
+
             async with httpx.AsyncClient() as client:
                 try:
                     await client.post("http://patient-service:8000/patients/internal-register", json=patient_payload)
