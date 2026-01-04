@@ -8,3 +8,4 @@ cryptography
 strawberry-graphql
 python-jose
 httpx
+aio-pika
