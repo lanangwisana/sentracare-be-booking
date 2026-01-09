@@ -27,13 +27,13 @@ app = FastAPI(
     version="1.0.0",
 )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# app.add_middleware(
+#     CORSMiddleware,
+#     allow_origins=["*"],
+#     allow_credentials=True,
+#     allow_methods=["*"],
+#     allow_headers=["*"],
+# )
 
 def get_db():
     db = SessionLocal()
@@ -41,6 +41,15 @@ def get_db():
         yield db
     finally:
         db.close()
+Base.metadata.create_all(bind=engine)
+
+# ==== GraphQL Setup ====
+graphql_app = GraphQLRouter(schema)
+app.include_router(
+    graphql_app, 
+    prefix="/booking/graphql",
+    tags=["GraphQL Booking"],
+    ) 
 
 @app.middleware("http")
 async def add_user_to_request(request: Request, call_next):
@@ -56,6 +65,7 @@ async def add_user_to_request(request: Request, call_next):
     return await call_next(request)
 
 # === Helper Functions ===
+# === Hitung umur dari tanggal lahir ===
 def calculate_age(dob: Optional[date]) -> int:
     if not dob:
         return 0
@@ -64,7 +74,7 @@ def calculate_age(dob: Optional[date]) -> int:
     if (today.month, today.day) < (dob.month, dob.day):
         age -= 1
     return max(age, 0)
-
+# === Jenis kelamin full dari booking ===
 def gender_full_from_booking(booking: Booking) -> str:
     if booking.jenis_kelamin and booking.jenis_kelamin.value == "PEREMPUAN":
         return "Perempuan"
@@ -72,10 +82,10 @@ def gender_full_from_booking(booking: Booking) -> str:
 
 # === ENDPOINT UNTUK PASIEN MEMBUAT BOOKING ===
 @app.post(
-    "/booking",
-    tags="",
-    summary="",
-    description=""
+    "/booking/create-booking",
+    tags=["Booking"],
+    summary="Buat booking baru",
+    description="Endpoint untuk membuat booking baru oleh pasien"
     )
 async def create_booking(data: BookingRequest, request: Request, db: Session = Depends(get_db)):
     user = getattr(request.state, "user", None)
@@ -105,7 +115,12 @@ async def create_booking(data: BookingRequest, request: Request, db: Session = D
         db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.put("/booking/{booking_id}/status")
+@app.put(
+    "/booking/{booking_id}/status",
+    tags=["Booking"],
+    summary="Update status booking",
+    description="Endpoint untuk mengupdate status booking (CONFIRMED atau CANCELLED)"
+    )
 async def update_booking_status(booking_id: int, data: UpdateStatusRequest, request: Request, db: Session = Depends(get_db)):
     booking = db.query(Booking).filter(Booking.id == booking_id).first()
     if not booking:
@@ -151,12 +166,6 @@ async def update_booking_status(booking_id: int, data: UpdateStatusRequest, requ
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Internal Server Error: {str(e)}")
 
-graphql_app = GraphQLRouter(schema)
-app.include_router(graphql_app, prefix="/graphql")
-
-Base.metadata.create_all(bind=engine)
-
-
 class BookingResponse(BaseModel):
     id: int
     nama_lengkap: str
@@ -179,7 +188,12 @@ class BookingResponse(BaseModel):
         from_attributes = True
         
 # Endpoint baru untuk mendapatkan data booking lengkap
-@app.get("/api/bookings/full", response_model=List[BookingResponse])
+@app.get(
+    "/api/bookings/full", 
+    tags=["Booking"],
+    summary="Dapatkan daftar booking lengkap",
+    description="Endpoint untuk mendapatkan daftar booking dengan data lengkap",
+    response_model=List[BookingResponse])
 async def get_full_bookings(request: Request, db: Session = Depends(get_db)):
     user = getattr(request.state, "user", None)
     if not user:
@@ -220,7 +234,12 @@ async def get_full_bookings(request: Request, db: Session = Depends(get_db)):
     return result
 
 # Endpoint khusus untuk patient service EMR
-@app.get("/api/bookings/emr-patients", response_model=List[dict])
+@app.get(
+    "/api/bookings/emr-patients", 
+    tags=["Booking"],
+    summary="Dapatkan daftar booking untuk EMR (rekam medis) pasien",
+    description="Endpoint untuk mendapatkan daftar booking dengan data lengkap untuk EMR (rekam medis) pasien",
+    response_model=List[dict])
 async def get_bookings_for_emr(request: Request, db: Session = Depends(get_db)):
     user = getattr(request.state, "user", None)
     if not user:
